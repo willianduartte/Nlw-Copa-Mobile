@@ -1,10 +1,47 @@
-import { Heading, Text, VStack } from "native-base"
+import { Heading, Text, VStack, useToast } from "native-base"
 import { Header } from "../components/Header"
 import { Button } from "../components/Button"
 import { Input } from "../components/Input"
 import Logo from '../assets/logo.svg'
+import { useState } from "react"
+import { api } from "../services/api"
 
 export const New = () => {
+  const [title, setTitle] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const toast = useToast()
+ 
+  const handlePoolCreate = async () => {
+    if(!title.trim()) {
+      return toast.show({
+        title: 'Informe um nome do seu bolão',
+        placement: 'top',
+        bgColor: 'red.500'
+      })
+    }
+
+    try {
+      setIsLoading(true)
+      await api.post('/pools', { title })
+      toast.show({
+        title: 'Bolão criado com sucesso!',
+        placement: 'top',
+        bgColor: 'green.500'
+      })
+      setTitle('')
+    } catch (error) {
+      console.log(error)
+      toast.show({
+        title: 'Não foi possível criar o bolão',
+        placement: 'top',
+        bgColor: 'red.500'
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <VStack flex={1} bgColor="gray.900" >
       <Header title="Criar novo bolão"/>
@@ -20,10 +57,14 @@ export const New = () => {
         <Input
           mb={2}
           placeholder='Qual o nome do seu bolão?'
+          onChangeText={setTitle}
+          value={title}
         />
 
         <Button
           title="CRIAR MEU BOLÃO"
+          onPress={handlePoolCreate}
+          isLoading={isLoading}
         />
 
         <Text
